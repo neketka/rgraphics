@@ -1,36 +1,41 @@
+use std::rc::Rc;
+
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
     window::{Window, WindowBuilder},
 };
 
-use self::resource::ResourceManager;
+use self::{renderer::Renderer, resource::ResourceManager};
 
 mod renderer;
 mod resource;
+mod system;
 
-pub struct Engine {
-    window: Window,
-    renderer: renderer::Renderer,
-    resource_manager: ResourceManager<'static>,
+pub struct Engine<'a> {
+    pub window: Window,
+    pub renderer: Rc<Renderer>,
+    pub resource_manager: ResourceManager<'a>,
     event_loop: EventLoop<()>,
 }
 
-impl Engine {
-    pub async fn new() -> Engine {
+impl<'a> Engine<'a> {
+    pub async fn new() -> Engine<'a> {
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new()
-            .with_title("Hello world")
+            .with_title("RGraphics")
             .build(&event_loop)
             .unwrap();
-        let renderer = renderer::Renderer::new(&window).await;
 
-        Engine {
+        let renderer = Rc::new(Renderer::new(&window).await);
+        let engine = Engine {
+            resource_manager: ResourceManager::new("./res", renderer.clone()),
+            renderer,
             window,
             event_loop,
-            renderer,
-            resource_manager: ResourceManager::new("./res"),
-        }
+        };
+
+        engine
     }
 
     pub fn start(self) {

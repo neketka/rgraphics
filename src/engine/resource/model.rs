@@ -1,22 +1,24 @@
-use cgmath::{vec4, Vector4};
-
 use super::loadable::Loadable;
 
+#[repr(C)]
+#[derive(Copy, Clone)]
 pub struct ModelVertex {
-    pos: Vector4<f32>,
-    normal: Vector4<f32>,
-    uv: Vector4<f32>,
+    pos: [f32; 3],
+    normal: [f32; 3],
+    uv: [f32; 2],
 }
+
+unsafe impl bytemuck::Pod for ModelVertex {}
+unsafe impl bytemuck::Zeroable for ModelVertex {}
+
 pub struct ModelData {
     vertices: Vec<ModelVertex>,
-    indices: Vec<i32>,
 }
 
 impl Loadable<ModelData> for ModelData {
     fn load(path: &str) -> Result<ModelData, std::io::Error> {
         let mut data = Self {
             vertices: Vec::new(),
-            indices: Vec::new(),
         };
 
         let obj = obj::Obj::load(path).unwrap();
@@ -32,17 +34,15 @@ impl Loadable<ModelData> for ModelData {
                             let [xn, yn, zn] = obj.data.normal[i];
 
                             data.vertices.push(ModelVertex {
-                                pos: vec4(x, y, z, 1.0),
-                                normal: vec4(xn, yn, zn, 1.0),
-                                uv: vec4(u, v, 1.0, 1.0),
+                                pos: [x, y, z],
+                                normal: [xn, yn, zn],
+                                uv: [u, v],
                             });
                         }
                     }
                 }
             }
         }
-
-        data.indices.extend(0..(data.vertices.len() as i32));
 
         Ok(data)
     }

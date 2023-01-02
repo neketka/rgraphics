@@ -2,11 +2,11 @@ use wgpu::*;
 use winit::{dpi::PhysicalSize, window::Window};
 
 pub struct Renderer {
-    surface: Surface,
-    device: Device,
-    queue: Queue,
-    surface_config: SurfaceConfiguration,
-    size: PhysicalSize<u32>,
+    pub surface: Surface,
+    pub device: Device,
+    pub queue: Queue,
+    pub surface_config: SurfaceConfiguration,
+    pub size: PhysicalSize<u32>,
 }
 
 impl Renderer {
