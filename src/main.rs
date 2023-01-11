@@ -1,7 +1,11 @@
+use engine::world::World;
+
 mod engine;
 
 fn main() {
     pollster::block_on(async {
-        engine::start().await;
+        let behaviors = vec![];
+
+        engine::start(World::new(behaviors)).await;
     });
 }

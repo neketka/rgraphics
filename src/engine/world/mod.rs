@@ -56,7 +56,7 @@ pub struct World {
 }
 
 impl World {
-    fn new(behaviors: Vec<Box<dyn WorldBehavior>>) -> World {
+    pub fn new(behaviors: Vec<Box<dyn WorldBehavior>>) -> World {
         World {
             id_counter: 0,
             behaviors: Some(Box::new(behaviors)),
@@ -68,7 +68,7 @@ impl World {
         }
     }
 
-    fn create_entity(&mut self, tags: &[&str], render: Option<RenderId>) -> EntityId {
+    pub fn create_entity(&mut self, tags: &[&str], render: Option<RenderId>) -> EntityId {
         let id = self.id_counter;
         self.id_counter += 1;
 
@@ -105,7 +105,7 @@ impl World {
         id
     }
 
-    fn delete_entity(&mut self, id: EntityId) {
+    pub fn delete_entity(&mut self, id: EntityId) {
         let entity = self.entities.remove(&id).unwrap();
         if let Some(render_id) = entity.render {
             let renders = self.render_to_entities.get_mut(&render_id).unwrap();
@@ -121,23 +121,23 @@ impl World {
         }
     }
 
-    fn get_render(&self, id: EntityId) -> Option<RenderId> {
+    pub fn get_render(&self, id: EntityId) -> Option<RenderId> {
         self.entities.get(&id).unwrap().render
     }
 
-    fn ids_by_tag<'a>(&self, tag: &str) -> &Vec<EntityId> {
+    pub fn ids_by_tag<'a>(&self, tag: &str) -> &Vec<EntityId> {
         self.tag_to_entities.get(tag).unwrap()
     }
 
-    fn tags_by_id<'a>(&self, id: EntityId) -> &Vec<String> {
+    pub fn tags_by_id<'a>(&self, id: EntityId) -> &Vec<String> {
         self.entity_to_tags.get(&id).unwrap()
     }
 
-    fn transform_by_id<'a>(&mut self, id: EntityId) -> &mut EntityTransform {
+    pub fn transform_by_id<'a>(&mut self, id: EntityId) -> &mut EntityTransform {
         &mut self.entities.get_mut(&id).unwrap().transform
     }
 
-    fn init(&mut self, resources: &mut EngineResources) {
+    pub fn init(&mut self, resources: &mut EngineResources) {
         let mut behaviors = self.behaviors.take().unwrap();
         let mut storage = self.renderer_storage.take().unwrap();
 
@@ -154,7 +154,7 @@ impl World {
         self.behaviors = Some(behaviors);
     }
 
-    fn run(&mut self, dt: f32, resources: &mut EngineResources) {
+    pub fn run(&mut self, dt: f32, resources: &mut EngineResources) {
         let mut behaviors = self.behaviors.take().unwrap();
         let mut storage = self.renderer_storage.take().unwrap();
 

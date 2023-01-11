@@ -4,7 +4,7 @@ use winit::{
     window::WindowBuilder,
 };
 
-use self::{renderer::RendererState, resource::ResourceManager};
+use self::{renderer::RendererState, resource::ResourceManager, world::World};
 
 pub mod renderer;
 pub mod resource;
@@ -15,7 +15,7 @@ pub struct EngineResources {
     resource_manager: ResourceManager,
 }
 
-pub async fn start() {
+pub async fn start(mut world: World) {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
         .with_title("RGraphics")
@@ -29,6 +29,8 @@ pub async fn start() {
         renderer,
         resource_manager,
     };
+
+    world.init(&mut resources);
 
     event_loop.run(move |event, _, flow| {
         match event {
@@ -44,8 +46,6 @@ pub async fn start() {
             },
             Event::MainEventsCleared => {
                 let surface = resources.renderer.surface.get_current_texture().unwrap();
-
-                
 
                 surface.present();
             }
