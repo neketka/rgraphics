@@ -1,54 +1,55 @@
-use std::rc::Rc;
-
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
-    window::{Window, WindowBuilder},
+    window::WindowBuilder,
 };
 
-use self::{renderer::Renderer, resource::ResourceManager};
+use self::{renderer::RendererState, resource::ResourceManager};
 
-mod renderer;
-mod resource;
-mod system;
+pub mod renderer;
+pub mod resource;
+pub mod world;
 
-pub struct Engine<'a> {
-    pub window: Window,
-    pub renderer: Rc<Renderer>,
-    pub resource_manager: ResourceManager<'a>,
-    event_loop: EventLoop<()>,
+pub struct EngineResources {
+    renderer: RendererState,
+    resource_manager: ResourceManager,
 }
 
-impl<'a> Engine<'a> {
-    pub async fn new() -> Engine<'a> {
-        let event_loop = EventLoop::new();
-        let window = WindowBuilder::new()
-            .with_title("RGraphics")
-            .build(&event_loop)
-            .unwrap();
+pub async fn start() {
+    let event_loop = EventLoop::new();
+    let window = WindowBuilder::new()
+        .with_title("RGraphics")
+        .build(&event_loop)
+        .unwrap();
 
-        let renderer = Rc::new(Renderer::new(&window).await);
-        let engine = Engine {
-            resource_manager: ResourceManager::new("./res", renderer.clone()),
-            renderer,
-            window,
-            event_loop,
-        };
+    let renderer = RendererState::new(&window).await;
+    let resource_manager = ResourceManager::new("./res", &renderer);
 
-        engine
-    }
+    let mut resources = EngineResources {
+        renderer,
+        resource_manager,
+    };
 
-    pub fn start(self) {
-        self.event_loop.run(|event, _, flow| {
-            match event {
-                Event::WindowEvent { event, .. } => {
-                    if event == WindowEvent::CloseRequested {
-                        *flow = ControlFlow::Exit;
-                        return;
-                    }
+    event_loop.run(move |event, _, flow| {
+        match event {
+            Event::WindowEvent { event, .. } => match event {
+                WindowEvent::CloseRequested => {
+                    *flow = ControlFlow::Exit;
+                    return;
                 }
-                _ => (),
-            };
-        });
-    }
+                WindowEvent::Resized(size) => {
+                    resources.renderer.resize(size);
+                }
+                _ => {}
+            },
+            Event::MainEventsCleared => {
+                let surface = resources.renderer.surface.get_current_texture().unwrap();
+
+                
+
+                surface.present();
+            }
+            _ => (),
+        };
+    });
 }

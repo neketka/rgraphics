@@ -1,7 +1,7 @@
 use wgpu::*;
 use winit::{dpi::PhysicalSize, window::Window};
 
-pub struct Renderer {
+pub struct RendererState {
     pub surface: Surface,
     pub device: Device,
     pub queue: Queue,
@@ -9,8 +9,8 @@ pub struct Renderer {
     pub size: PhysicalSize<u32>,
 }
 
-impl Renderer {
-    pub async fn new(window: &Window) -> Renderer {
+impl RendererState {
+    pub async fn new(window: &Window) -> RendererState {
         let size = window.inner_size();
         let instance = Instance::new(wgpu::Backends::all());
         let surface = unsafe { instance.create_surface(window) };
@@ -26,7 +26,11 @@ impl Renderer {
         let (device, queue) = adapter
             .request_device(
                 &DeviceDescriptor {
-                    features: Features::empty(),
+                    features: Features::CLEAR_TEXTURE
+                        | Features::DEPTH_CLIP_CONTROL
+                        | Features::PUSH_CONSTANTS
+                        | Features::TEXTURE_BINDING_ARRAY
+                        | Features::PARTIALLY_BOUND_BINDING_ARRAY,
                     limits: Limits::default(),
                     label: None,
                 },

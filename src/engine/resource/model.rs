@@ -3,16 +3,16 @@ use super::loadable::Loadable;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct ModelVertex {
-    pos: [f32; 3],
-    normal: [f32; 3],
-    uv: [f32; 2],
+    pub pos: [f32; 3],
+    pub normal: [f32; 3],
+    pub uv: [f32; 2],
 }
 
 unsafe impl bytemuck::Pod for ModelVertex {}
 unsafe impl bytemuck::Zeroable for ModelVertex {}
 
 pub struct ModelData {
-    vertices: Vec<ModelVertex>,
+    pub vertices: Vec<ModelVertex>,
 }
 
 impl Loadable<ModelData> for ModelData {

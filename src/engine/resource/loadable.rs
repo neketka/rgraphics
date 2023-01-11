@@ -4,16 +4,16 @@ pub trait Loadable<T> {
     fn load(path: &str) -> Result<T, std::io::Error>;
 }
 
-pub struct ResourceBox<'a, T: Loadable<T>> {
+pub struct ResourceBox<T: Loadable<T>> {
     resource: Option<Rc<T>>,
-    path: &'a str,
+    path: String,
 }
 
-impl<'a, T: Loadable<T>> ResourceBox<'a, T> {
-    pub fn new(path: &'a str) -> ResourceBox<'a, T> {
+impl<T: Loadable<T>> ResourceBox<T> {
+    pub fn new(path: &str) -> ResourceBox<T> {
         Self {
             resource: None,
-            path,
+            path: String::from(path),
         }
     }
 

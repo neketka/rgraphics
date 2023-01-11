@@ -3,9 +3,9 @@ use std::{fs::File, io::BufReader};
 use super::loadable::Loadable;
 
 pub struct TextureData {
-    width: i32,
-    height: i32,
-    data: Vec<u8>,
+    pub width: i32,
+    pub height: i32,
+    pub data: Vec<u8>,
 }
 
 impl Loadable<TextureData> for TextureData {
