@@ -3,8 +3,8 @@ use std::{fs::File, io::BufReader};
 use super::loadable::Loadable;
 
 pub struct TextureData {
-    pub width: i32,
-    pub height: i32,
+    pub width: u32,
+    pub height: u32,
     pub data: Vec<u8>,
 }
 
@@ -13,8 +13,8 @@ impl Loadable<TextureData> for TextureData {
         let reader = BufReader::new(File::open(path)?);
         let img = image::load(reader, image::ImageFormat::Png).unwrap();
         Ok(TextureData {
-            width: img.width() as i32,
-            height: img.height() as i32,
+            width: img.width(),
+            height: img.height(),
             data: img.to_rgba8().to_vec(),
         })
     }

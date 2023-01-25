@@ -5,8 +5,8 @@ use wgpu::*;
 use super::model::ModelVertex;
 
 struct MeshAllocation {
-    first_vertex: i32,
-    count: i32,
+    first_vertex: usize,
+    count: usize,
 }
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub struct MeshHandle(i32);
 pub struct MeshManager {
     pub vertex_buffer: Buffer,
     pub vertex_layout: VertexBufferLayout<'static>,
-    vertex_count: i32,
+    vertex_count: usize,
     allocations: HashMap<i32, MeshAllocation>,
     free_indices: Vec<i32>,
     min_free_id: i32,
@@ -25,7 +25,7 @@ static ATTR_ARR: [VertexAttribute; 3] =
     vertex_attr_array![0 => Float32x3, 1 => Float32x3, 2 => Float32x2];
 
 impl MeshManager {
-    pub fn new(device: &Device, size: i32) -> Self {
+    pub fn new(device: &Device, size: usize) -> Self {
         let buf = device.create_buffer(&BufferDescriptor {
             label: Some("MeshManager Vertices"),
             size: (std::mem::size_of::<ModelVertex>() * size as usize) as u64,
@@ -55,7 +55,7 @@ impl MeshManager {
         }
     }
 
-    pub fn alloc_mesh(&mut self, size: i32) -> MeshHandle {
+    pub fn alloc_mesh(&mut self, size: usize) -> MeshHandle {
         for index in 0..self.allocations.len() {
             let free_id = self.free_indices[index];
             let alloc = self.allocations.get(&(index as i32)).unwrap();
@@ -88,7 +88,7 @@ impl MeshManager {
         queue: &Queue,
         data: &[ModelVertex],
         handle: &MeshHandle,
-        offset: i32,
+        offset: usize,
     ) {
         let alloc = self.allocations.get(&handle.0).unwrap();
 
@@ -99,7 +99,7 @@ impl MeshManager {
         );
     }
 
-    pub fn get_range(&self, handle: &MeshHandle) -> Range<i32> {
+    pub fn get_range(&self, handle: &MeshHandle) -> Range<usize> {
         let range = self.allocations.get(&handle.0).unwrap();
         range.first_vertex..range.first_vertex + range.count
     }

@@ -13,8 +13,8 @@ use std::{collections::HashMap, num::NonZeroU32};
 use super::renderer::RendererState;
 
 pub struct ResourceManager {
-    pub models: HashMap<String, ResourceBox<TextureData>>,
-    pub textures: HashMap<String, ResourceBox<ModelData>>,
+    pub models: HashMap<String, ResourceBox<ModelData>>,
+    pub textures: HashMap<String, ResourceBox<TextureData>>,
     pub mesh_manager: MeshManager,
     pub tex_manager: TexManager,
 }

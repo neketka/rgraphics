@@ -6,6 +6,12 @@ use super::texture::TextureData;
 
 pub struct TexHandle(u64);
 
+pub enum TexDataFormat<'a> {
+    StaticRGBA8(&'a TextureData),
+    DynamicRGBA32(u32, u32),
+    DynamicDepth(u32, u32),
+}
+
 pub struct TexManager {
     committed: Vec<(Texture, TextureView)>,
     mapping_ids: Vec<u64>,
@@ -114,27 +120,41 @@ impl TexManager {
         &mut self,
         device: &Device,
         queue: &Queue,
-        tex_data: &TextureData,
+        tex_data: TexDataFormat,
     ) -> TexHandle {
         if self.max_size == self.committed.len() {
             panic!("Unable to allocate texture!");
         }
 
+        let (w, h, format) = match tex_data {
+            TexDataFormat::StaticRGBA8(data) => {
+                (data.width, data.height, TextureFormat::Rgba8Unorm)
+            }
+
+            TexDataFormat::DynamicRGBA32(w, h) => (w, h, TextureFormat::Rgba32Float),
+            TexDataFormat::DynamicDepth(w, h) => (w, h, TextureFormat::Depth24Plus),
+        };
+
         let desc = TextureDescriptor {
             label: None,
             size: Extent3d {
-                width: tex_data.width as u32,
-                height: tex_data.height as u32,
+                width: w,
+                height: h,
                 depth_or_array_layers: 1,
             },
             mip_level_count: 1,
             sample_count: 1,
             dimension: TextureDimension::D2,
-            format: TextureFormat::Rgba8Unorm,
+            format: format,
             usage: TextureUsages::COPY_DST | TextureUsages::TEXTURE_BINDING,
         };
 
-        let tex = device.create_texture_with_data(queue, &desc, tex_data.data.as_slice());
+        let tex = if let TexDataFormat::StaticRGBA8(data) = tex_data {
+            device.create_texture_with_data(queue, &desc, data.data.as_slice())
+        } else {
+            device.create_texture(&desc)
+        };
+
         let view = tex.create_view(&TextureViewDescriptor::default());
 
         self.committed.push((tex, view));
@@ -152,7 +172,7 @@ impl TexManager {
         handle
     }
 
-    fn free_tex(&mut self, device: &Device, alloc: TexHandle) {
+    pub fn free_tex(&mut self, alloc: TexHandle) {
         let id = alloc.0;
         let idx = *self.alloc_mapping.get(&id).unwrap();
         let remap_id = self.mapping_ids.swap_remove(idx);
@@ -163,7 +183,7 @@ impl TexManager {
         self.alloc_mapping.insert(remap_id, idx);
     }
 
-    fn set_data(&mut self, queue: &Queue, alloc: &TexHandle, tex_data: &TextureData) {
+    pub fn set_data(&mut self, queue: &Queue, alloc: &TexHandle, tex_data: &TextureData) {
         let idx = *self.alloc_mapping.get(&alloc.0).unwrap();
         let tex = self.committed.get(idx).unwrap();
 
@@ -188,7 +208,7 @@ impl TexManager {
         )
     }
 
-    fn get_index(&self, handle: &TexHandle) -> usize {
+    pub fn get_index(&self, handle: &TexHandle) -> usize {
         *self.alloc_mapping.get(&handle.0).unwrap()
     }
 
